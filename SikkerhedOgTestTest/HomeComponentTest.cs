@@ -74,7 +74,7 @@ public class HomeComponentTest
     }
 
     [Fact]
-    public void Authorized_User_Gets_Authorized_And_User_Message_When_Logged_In_With_User_Role()
+    public void Authorized_User_Gets_Authorized_User_Message_When_Logged_In_With_User_Role()
     {
         // Arrange
         using var ctx = new TestContext(); // Initializing bUnit test context
@@ -97,7 +97,7 @@ public class HomeComponentTest
     }
 
     [Fact]
-    public void Authorized_User_Gets_Authorized__And_Admin_Message_When_Logged_In_With_Admin_Role()
+    public void Authorized_User_Gets_Authorized_Admin_Message_When_Logged_In_With_Admin_Role()
     {
         // Arrange
         using var ctx = new TestContext(); // Initializing bUnit test context
