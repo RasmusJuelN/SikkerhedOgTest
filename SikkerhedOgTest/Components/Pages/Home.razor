@@ -67,10 +67,10 @@
                         <button type="submit" class="w-100 btn btn-lg btn-primary">Add Task</button>
                     </EditForm>
 
-                    @if (todoItemList != null && todoItemList.Any())
+                    @if (decryptedTodoItemList != null && decryptedTodoItemList.Any())
                     {
                         <ul>
-                            @foreach (var item in todoItemList)
+                            @foreach (var item in decryptedTodoItemList)
                             {
                                 <li>@item.TodoItemName</li>
                             }
@@ -114,6 +114,7 @@
 
     private TodoItem todoItem = new();
     private List<TodoItem> todoItemList = new();
+    private List<TodoItem> decryptedTodoItemList = new(); 
     private string inputTodoItem;
 
 
@@ -222,11 +223,12 @@
             await TodoDbContext.TodoItems.AddAsync(todoItem);
             await TodoDbContext.SaveChangesAsync();
             await LoadTodoItems();
-            // Optionally clear the form after saving
             inputTodoItem = string.Empty;
             
         }
     }
+
+    
 
     private async Task LoadTodoItems()
     {
@@ -244,14 +246,21 @@
                 .Where(t => t.CprId == userCpr.Id)
                 .ToListAsync();
 
-            
-            
+            decryptedTodoItemList.Clear();
+
             foreach (var item in todoItemList)
             {
-                item.TodoItemName = await _asymmetriskEncryptionHandler.AsymmetriskDecrypt(item.TodoItemName);
-                todoItemList.Add(item);
+                // New TodoItem with decrypted name, and add it to the new list
+                var decryptedItem = new TodoItem
+                {
+                    Id = item.Id,
+                    CprId = item.CprId,
+                    TodoItemName = await _asymmetriskEncryptionHandler.AsymmetriskDecrypt(item.TodoItemName),
+                };
+                decryptedTodoItemList.Add(decryptedItem);
             }
 
         }
     }
+}
 }
