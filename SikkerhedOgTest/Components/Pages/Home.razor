@@ -1,74 +1,257 @@
 ﻿@page "/"
+@attribute [Authorize(Policy = "AuthenticatedUser")]
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using SikkerhedOgTest.Codes
+@using SikkerhedOgTest.Data
+@using SikkerhedOgTest.Models
 
-@using Microsoft.AspNetCore.Identity;
 
-@inject IServiceProvider _serviceProvider;
-@inject UserManager<Data.ApplicationUser> UserManager;
-@inject AuthenticationStateProvider _authenticationStateProvider;
+@inject AsymmetriskEncryptionHandler _asymmetriskEncryptionHandler
+@inject SymmetriskEncryptionHandler _symmetriskEncryptionHandler
+@inject HashingHandler _hashingHandler
 
-<PageTitle>Home</PageTitle>
+@inject TodoDbContext TodoDbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 
-@* @if (_isAuthenticated)
-{
-    <p class="authorized-message">You are authorized!</p>
-    if (_isAdminRole)
-    {
-        <p class="authorized-admin">You are Admin!</p>
-    }
-    if (_isUserRole)
-    {
-        <p class="authorized-user">You are User!</p>
-    }
-}
-else {
-    <p class="unauthorized-message">You are not logged in!</p>
-} *@
+<div class="authorized-container">
+    <div class="form-content">
 <AuthorizeView>
-    <Authorized>
-        <p class="authorized-message">You are authorized!</p>
+    <Authorized Context="auth">
+            <h4> Logged in as: @auth.User.Identity?.Name</h4>
+
+                @if (!isCprVerified)
+                {
+                    @if (hasCpr)
+                    {
+                        <!-- CPR Verification Form -->
+                        <EditForm Model="cprModel" OnValidSubmit="VerifyExistingCpr">
+                            <div style="margin-bottom:20px;">
+                                <label style="margin-bottom:20px;">CPR already registered. Input existing CPR:</label>
+                                <br />
+                                <InputText @bind-Value="inputCpr" class="form-control" aria-required="true" placeholder="1234567890" />
+                            </div>
+                            <button type="submit" class="w-100 btn btn-lg btn-primary">Verify CPR</button>
+                        </EditForm>
+                        @if (!isCprMatch)
+                        {
+                            <p class="text-danger">@errorMessage</p>
+                        }
+                    }
+                    else
+                    {
+                        <!-- CPR Registration Form -->
+                        <EditForm Model="cprModel" OnValidSubmit="RegisterNewCpr">
+                            <div style="margin-bottom:10px;">
+                                <label style="margin-bottom:10px;">Register your CPR Number</label>
+                                <br />
+                                <InputText @bind-Value="inputCpr" />
+                            </div>
+                            <button type="submit" class="w-100 btn btn-lg btn-primary">Submit CPR</button>
+                        </EditForm>
+                    }
+                }
+                else
+                {
+                    <!-- Todo Item Creation Form (Shown after CPR is verified or registered) -->
+                    <EditForm Model="todoItem" OnValidSubmit="CreateTodoItem">
+                        <div style="margin-bottom:20px;">
+                            <label style="margin-bottom:10px; font-size: 20px;">Create Task:</label>
+                            <br />
+                            <InputText @bind-Value="inputTodoItem" class="form-control" aria-required="true" placeholder="Task Name" />
+                        </div>
+                        <button type="submit" class="w-100 btn btn-lg btn-primary">Add Task</button>
+                    </EditForm>
+
+                    @if (todoItemList != null && todoItemList.Any())
+                    {
+                        <ul>
+                            @foreach (var item in todoItemList)
+                            {
+                                <li>@item.TodoItemName</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>No tasks available.</p>
+                    }
+                }
     </Authorized>
-    <NotAuthorized>
-        <p class="unauthorized-message">You are not logged in!</p>
-    </NotAuthorized>
-</AuthorizeView>
 
-<AuthorizeView Roles="Admin">
-    <p class="authorized-admin">You are Admin!</p>
-</AuthorizeView>
+        </AuthorizeView>
+    </div>
+</div>
 
-<AuthorizeView Roles="User">
-    <p class="authorized-user">You are User!</p>
-</AuthorizeView>
+<style>
+    .authorized-container {
+        
+        width: fit-content;
+        height: fit-content;
+        margin: 0 auto;
+        justify-content:center;
+        align-content:center;
+    }
 
+    .form-content{
+        text-align:center;
+        width: 500px;
+    }
+</style>
 
 @code {
-    public bool _isAuthenticated;
-    public bool _isAdminRole;
-    public bool _isUserRole;
+    private Cpr cprModel = new();                                               
+    private Cpr? existingCpr = null;
+    private string inputCpr;
+    private bool hasCpr = false;
+    private bool isCprMatch = false;
+    private bool isCprVerified = false;
+    private string? errorMessage;
+
+    private TodoItem todoItem = new();
+    private List<TodoItem> todoItemList = new();
+    private string inputTodoItem;
+
 
     protected override async Task OnInitializedAsync()
     {
-        var authenticationState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-        var authUser = authenticationState.User;
-        _isAuthenticated = authUser.Identity.IsAuthenticated;
-        _isAdminRole = authUser.IsInRole("Admin");
-        _isUserRole = authUser.IsInRole("User");
+        // string textToEncrypt = "Rasmus";
+        // string encryptedText = await _asymmetriskEncryptionHandler.AsymmetriskEncrypt(textToEncrypt);
+        // string decryptedText = await _asymmetriskEncryptionHandler.AsymmetriskDecrypt(encryptedText);
 
-        // await CreateUserRolesAsync("rasmusn686@hotmail.com", "User");
+        // string encryptedText = _symmetriskEncryptionHandler.Protect(textToEncrypt);
+        // string decryptedText = _symmetriskEncryptionHandler.Unprotect(encryptedText);
+
+        // string testToHash1 = "Rasmus";
+        // string testToHash2 = "Rasmus";
+
+        // string hashedValue1 = _hashingHandler.BCryptHashing(testToHash1);
+        // bool hashedValue2 = _hashingHandler.BCryptVerify(testToHash2, hashedValue1);
+
+        // bool isMatch = hashedValue1 == hashedValue2;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var username = user.Identity.Name;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            cprModel.Username = username;
+
+            // Check if the user already has a CPR in the database
+            existingCpr = await TodoDbContext.Cprs.FirstOrDefaultAsync(c => c.Username == username);
+
+            if (existingCpr != null)
+            {
+                hasCpr = true;  // User already has a CPR in the database
+
+            }
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/Login");
+        }
     }
 
-    // public async Task CreateUserRolesAsync(string user, string role)
-    // {
-    //     var roleManager = _serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    //     var userManager = UserManager;
+    private async Task RegisterNewCpr()
+    {
+        if (!hasCpr)
+        {
+            string hashedCpr = _hashingHandler.BCryptHashing(inputCpr);
+            cprModel.CprNr = hashedCpr;
+            
+            await TodoDbContext.Cprs.AddAsync(cprModel);
+            await TodoDbContext.SaveChangesAsync();
+            isCprVerified = true;
 
-    //     var userRoleCheck = await roleManager.RoleExistsAsync(role);
-    //     if (!userRoleCheck)
-    //         await roleManager.CreateAsync(new IdentityRole(role));
+            await LoadTodoItems();
+            // Redirect after saving CPR
+            NavigationManager.NavigateTo("/");
+        }
+    }
 
-    //     Data.ApplicationUser identityUser = await userManager.FindByEmailAsync(user);
-    //     await userManager.AddToRoleAsync(identityUser, role);
+    private async Task VerifyExistingCpr()
+    {
+        // Verify the entered CPR number against the hashed value
+        bool isCprValid = _hashingHandler.BCryptVerify(inputCpr, existingCpr.CprNr);
 
-    // }
+        if (isCprValid)
+        {
+            // CPR matches the one in the database
+            isCprMatch = true;
+            isCprVerified = true;
+            errorMessage = null;
+            await LoadTodoItems();
+            NavigationManager.NavigateTo("/");
+
+
+        }
+        else
+        {
+            // CPR does not match, and shows an error message
+            isCprMatch = false;
+            errorMessage = "The entered CPR number does not match with user.";
+            
+        }
+    }
+
+    private async Task CreateTodoItem()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var username = user.Identity.Name;
+        var userCpr = await TodoDbContext.Cprs.FirstOrDefaultAsync(c => c.Username == username);
+
+        if (userCpr != null)
+        {
+
+            todoItem = new TodoItem
+                {
+                    CprId = userCpr.Id, // Assign the CPR ID
+                    TodoItemName = await _asymmetriskEncryptionHandler.AsymmetriskEncrypt(inputTodoItem) // Encrypt the task name
+                };
+         
+            // Assign the CprId to the new TodoItem
+            todoItem.CprId = userCpr.Id;
+
+            // Save the new TodoItem to the database
+            await TodoDbContext.TodoItems.AddAsync(todoItem);
+            await TodoDbContext.SaveChangesAsync();
+            await LoadTodoItems();
+            // Optionally clear the form after saving
+            inputTodoItem = string.Empty;
+            
+        }
+    }
+
+    private async Task LoadTodoItems()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var username = user.Identity.Name;
+
+        // Find the user's CPR
+        var userCpr = await TodoDbContext.Cprs.FirstOrDefaultAsync(c => c.Username == username);
+
+        if (userCpr != null)
+        {
+            // Load the TodoItems for the current user's CPR
+            todoItemList = await TodoDbContext.TodoItems
+                .Where(t => t.CprId == userCpr.Id)
+                .ToListAsync();
+
+            
+            
+            foreach (var item in todoItemList)
+            {
+                item.TodoItemName = await _asymmetriskEncryptionHandler.AsymmetriskDecrypt(item.TodoItemName);
+                todoItemList.Add(item);
+            }
+
+        }
+    }
 }

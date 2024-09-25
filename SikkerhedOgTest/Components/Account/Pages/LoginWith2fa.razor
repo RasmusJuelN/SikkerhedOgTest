@@ -10,13 +10,14 @@
 @inject ILogger<LoginWith2fa> Logger
 
 <PageTitle>Two-factor authentication</PageTitle>
-
+<div class="login-component">
+    <div class="login-content">
 <h1>Two-factor authentication</h1>
 <hr />
 <StatusMessage Message="@message" />
 <p>Your login is protected with an authenticator app. Enter your authenticator code below.</p>
-<div class="row">
-    <div class="col-md-4">
+<div>
+    <div>
         <EditForm Model="Input" FormName="login-with-2fa" OnValidSubmit="OnValidSubmitAsync" method="post">
             <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
             <input type="hidden" name="RememberMe" value="@RememberMe" />
@@ -43,6 +44,23 @@
     Don't have access to your authenticator device? You can
     <a href="Account/LoginWithRecoveryCode?ReturnUrl=@ReturnUrl">log in with a recovery code</a>.
 </p>
+</div>
+</div>
+
+<style>
+    .login-component {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-content: center;
+    }
+
+    .login-content {
+        width: 100%;
+        max-width: 500px;
+    }
+</style>
 
 @code {
     private string? message;
@@ -82,7 +100,7 @@
         if (result.Succeeded)
         {
             Logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", userId);
-            RedirectManager.RedirectTo(ReturnUrl);
+            RedirectManager.RedirectTo("/");
         }
         else if (result.IsLockedOut)
         {

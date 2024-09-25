@@ -1,0 +1,60 @@
+﻿@* @page "/
+
+@using Microsoft.AspNetCore.Identity
+@using SikkerhedOgTest.Data
+@using SikkerhedOgTest.Models
+
+@inject TodoDbContext TodoDbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>Input CPR Number</h3>
+<AuthorizeView>
+    <Authorized>
+        <EditForm Model="cprModel" OnValidSubmit="SaveCpr">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div>
+                <label>CPR Number</label>
+                <InputText @bind-Value="cprModel.CprNr" />
+            </div>
+            <button type="submit">Submit</button>
+        </EditForm>
+    </Authorized>
+    <NotAuthorized>
+        <p class="unauthorized-message">You are not logged in!</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    private Cpr cprModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var username = user.Identity.Name; 
+            cprModel.Username = username;  
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/Login");
+        }
+    }
+
+    private async Task SaveCpr()
+    {
+        // Save CPR to TodoDb
+        await TodoDbContext.Cprs.AddAsync(cprModel);
+        await TodoDbContext.SaveChangesAsync();
+
+        // Redirect after saving CPR
+        NavigationManager.NavigateTo("/");
+    }
+} *@

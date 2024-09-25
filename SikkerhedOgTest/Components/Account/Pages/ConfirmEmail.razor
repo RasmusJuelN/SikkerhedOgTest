@@ -21,15 +21,37 @@
 
 
 <PageTitle>Confirm email</PageTitle>
-
-<h1>Confirm email</h1>
-<StatusMessage Message="@statusMessage" />
-<div>
-    Please download Google authenticator and scan the QRCode below to register your app
-    <br />
-    <img src="@_imageSource" alt="QRCode" style="width: 300px; height:300px;"/>
+<div class="qr-component">
+    <div class="qr-content">
+        <h1>Confirm email</h1>
+        <StatusMessage Message="@statusMessage" />
+        <div>
+            Please download Google authenticator and scan the QRCode below to register your app
+            <br />
+            <img src="@_imageSource" alt="QRCode" style="width: 300px; height:300px;" />
+        </div>
+    </div>
+    
 </div>
 
+<style>
+    .qr-component {
+        width: fit-content;
+        height: fit-content;
+        margin: 0 auto;
+        
+    }
+
+    .qr-content{
+        position: absolute;
+        width: 500px;
+        transform: translateX(-50%);
+        text-align: center;
+        
+    }
+
+    
+</style>
 @code {
     private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
     private string? statusMessage;
