@@ -14,8 +14,7 @@ a, .btn-link {
 
     .btn-primary:hover {
         color: #fff;
-        background: linear-gradient(90deg, rgba(91,201,231,1) 70%, rgba(89,47,194,1) 100%);
-        
+        background: linear-gradient(90deg, rgba(65,138,158,1) 36%, rgba(55,30,119,1) 100%);
     }
 
     .btn-check:focus + .btn-primary, .btn-primary:focus {
@@ -50,8 +49,7 @@ a, .btn-link {
 
     .custom-button:hover {
         color: #fff;
-        background: linear-gradient(90deg, rgba(91,201,231,1) 70%, rgba(89,47,194,1) 100%);
-        
+        background: linear-gradient(90deg, rgba(65,138,158,1) 36%, rgba(55,30,119,1) 100%);
     }
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
