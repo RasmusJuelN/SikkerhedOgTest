@@ -267,6 +267,7 @@
         }
     }
 
+    // Register a new CPR and load TodoItems
     private async Task RegisterNewCpr()
     {
         if (string.IsNullOrWhiteSpace(inputCpr))
@@ -288,6 +289,7 @@
         }
     }
 
+    // Verify the existing CPR and load TodoItems
     private async Task VerifyExistingCpr()
     {
         if (string.IsNullOrWhiteSpace(inputCpr))
@@ -315,6 +317,7 @@
         }
     }
 
+    // Create a new TodoItem
     private async Task CreateTodoItem()
     {
         if (string.IsNullOrWhiteSpace(inputTodoItem))
@@ -350,7 +353,7 @@
     }
 
     
-
+    // Load the TodoItems for the current user
     private async Task LoadTodoItems()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
