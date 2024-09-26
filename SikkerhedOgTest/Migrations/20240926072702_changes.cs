@@ -5,24 +5,12 @@
 namespace SikkerhedOgTest.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class changes : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Cprs",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CprNr = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Cprs", x => x.Id);
-                });
+           
 
             migrationBuilder.CreateTable(
                 name: "TodoItems",

@@ -18,7 +18,7 @@ public class AsymmetriskEncryptionHandler
 
         //using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
         //{
-        //    //gør persistent og gem i en fil et sted (.pem?)
+        //    //gør persistent og gem i en fil 
         //    //_privateKey = rsa.ToXmlString(true);
         //    //_publicKey = rsa.ToXmlString(false);
         //}
@@ -76,6 +76,7 @@ public class AsymmetriskEncryptionHandler
 
     public async Task<string> AsymmetriskDecrypt(string textToDecrypt)
     {
+
         using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
         {
             rsa.FromXmlString(_privateKey);

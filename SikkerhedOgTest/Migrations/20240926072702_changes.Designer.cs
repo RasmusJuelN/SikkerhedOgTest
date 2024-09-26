@@ -11,8 +11,8 @@ using SikkerhedOgTest.Data;
 namespace SikkerhedOgTest.Migrations
 {
     [DbContext(typeof(TodoDbContext))]
-    [Migration("20240925141258_changesToCpr")]
-    partial class changesToCpr
+    [Migration("20240926072702_changes")]
+    partial class changes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
